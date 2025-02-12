@@ -5,6 +5,7 @@ import java.util.HashMap;
 import no.hvl.dat110.TODO;
 import no.hvl.dat110.messaging.MessageConnection;
 import no.hvl.dat110.messaging.Message;
+import no.hvl.dat110.messaging.MessageUtils;
 import no.hvl.dat110.messaging.MessagingServer;
 
 public class RPCServer {
@@ -50,9 +51,14 @@ public class RPCServer {
 		   // - encapsulate return value 
 		   // - send back the message containing the RPC reply
 			
-		   if (true)
-				throw new UnsupportedOperationException(TODO.method());
-		   
+		   byte[] message = connection.receive().getData();
+		   rpcid = message[0];
+		   byte[] params = RPCUtils.decapsulate(message);
+		   RPCRemoteImpl impl = services.get(rpcid);
+		   byte[] response = impl.invoke(params);
+		   byte[] responseE = RPCUtils.encapsulate(rpcid, response);
+		   connection.send(new Message(responseE));
+
 		   // TODO - END
 
 			// stop the server if it was stop methods that was called
