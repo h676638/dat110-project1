@@ -1,10 +1,13 @@
 package no.hvl.dat110.rpc;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 
 import no.hvl.dat110.TODO;
 import no.hvl.dat110.messaging.MessageConnection;
 import no.hvl.dat110.messaging.Message;
+import no.hvl.dat110.messaging.MessageUtils;
 import no.hvl.dat110.messaging.MessagingServer;
 
 public class RPCServer {
@@ -23,7 +26,7 @@ public class RPCServer {
 		
 	}
 	
-	public void run() {
+	public void run() throws UnknownHostException, IOException {
 		
 		// the stop RPC method is built into the server
 		RPCRemoteImpl rpcstop = new RPCServerStopImpl(RPCCommon.RPIDSTOP,this);
@@ -40,22 +43,16 @@ public class RPCServer {
 	    
 		   byte rpcid = 0;
 		   Message requestmsg, replymsg;
-		   
-		   // TODO - START
-		   // - receive a Message containing an RPC request
-		   // - extract the identifier for the RPC method to be invoked from the RPC request
-		   // - extract the method's parameter by decapsulating using the RPCUtils
-		   // - lookup the method to be invoked
-		   // - invoke the method and pass the param
-		   // - encapsulate return value 
-		   // - send back the message containing the RPC reply
 			
-		   if (true)
-				throw new UnsupportedOperationException(TODO.method());
-		   
-		   // TODO - END
+		   byte[] message = connection.receive().getData();
+		   rpcid = message[0];
+		   byte[] params = RPCUtils.decapsulate(message);
+		   RPCRemoteImpl impl = services.get(rpcid);
+		   byte[] response = impl.invoke(params);
+		   byte[] responseE = RPCUtils.encapsulate(rpcid, response);
+		   connection.send(new Message(responseE));
 
-			// stop the server if it was stop methods that was called
+
 		   if (rpcid == RPCCommon.RPIDSTOP) {
 			   stop = true;
 		   }
